@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fullscreen Clock</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            font-size: 10vw;
+            user-select: none;
+            overflow: hidden;
+            transition: background-color 0.5s, color 0.5s;
+        }
+        #clock {
+            transition: color 0.5s;
+        }
+        #date {
+            font-size: 5vw; /* Adjusted size for date */
+            margin-top: 10px; /* Space between clock and date */
+            display: none; /* Initially hidden */
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #controls button {
+            padding: 10px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .dark-mode {
+            background-color: black;
+            color: white;
+        }
+        .light-mode {
+            background-color: white;
+            color: black;
+        }
+        .dark-mode button {
+            background-color: #444;
+            color: white;
+        }
+        .light-mode button {
+            background-color: #ccc;
+            color: black;
+        }
+        #fullscreenClose {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            font-size: 1rem;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+        #note {
+            position: absolute;
+            bottom: 10px;
+            font-size: 0.7rem;
+            text-align: center;
+            width: 100%;
+            color: grey;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <div id="clock">Loading...</div>
+    <div id="date">Loading Date...</div>
+    <div id="controls">
+        <button id="changeTimezone" onclick="window.location.href='idkkkkkjaja.html'">Change Timezones</button>
+        <button id="toggleFullscreen">Toggle Fullscreen</button>
+        <button id="toggleMode">Light Mode</button>
+        <button id="toggleMilitary">Toggle Military Time</button>
+        <button id="toggleDate">Toggle Date</button>
+    </div>
+    <button id="fullscreenClose">X</button>
+    <div id="note">
+        Do not use vertical mode while buttons are visible.<br>
+        &copy;Copyright 2024 Joan Lagos, all rights reserved.
+    </div>
+    <script>
+        let isDarkMode = true;
+        let isMilitaryTime = false;
+        let showDate = false; // Track whether to show date
+        let currentTimezone = localStorage.getItem('currentTimezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        function updateTime() {
+            const options = {
+                timeZone: currentTimezone,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: !isMilitaryTime
+            };
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', options);
+            document.getElementById('clock').textContent = timeString;
+
+            // Update date if toggleDate is active
+            if (showDate) {
+                const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', timeZone: currentTimezone };
+                const dateString = now.toLocaleDateString('en-US', dateOptions);
+                document.getElementById('date').textContent = dateString;
+                document.getElementById('date').style.display = 'block'; // Show date when active
+            } else {
+                document.getElementById('date').style.display = 'none'; // Hide date when not active
+            }
+        }
+
+        function toggleFullscreen() {
+            const controls = document.getElementById('controls');
+            const fullscreenClose = document.getElementById('fullscreenClose');
+            const note = document.getElementById('note');
+
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    controls.style.display = 'none';
+                    fullscreenClose.style.display = 'block';
+                    note.style.display = 'none'; // Hide note in fullscreen
+                    updateTime(); // Ensure date is updated correctly when entering fullscreen
+                });
+            } else {
+                document.exitFullscreen().then(() => {
+                    controls.style.display = 'flex';
+                    fullscreenClose.style.display = 'none';
+                    note.style.display = 'block'; // Show note when exiting fullscreen
+                });
+            }
+        }
+
+        function toggleMode() {
+            const body = document.body;
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+                document.getElementById('toggleMode').textContent = 'Light Mode';
+            } else {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+                document.getElementById('toggleMode').textContent = 'Dark Mode';
+            }
+        }
+
+        function toggleMilitaryTime() {
+            isMilitaryTime = !isMilitaryTime;
+            updateTime();
+        }
+
+        function toggleDate() {
+            showDate = !showDate; // Toggle date visibility
+            if (showDate && document.fullscreenElement) {
+                document.getElementById('date').style.display = 'block'; // Show date in fullscreen
+            } else {
+                document.getElementById('date').style.display = 'none'; // Hide date if not in fullscreen
+            }
+            updateTime(); // Update date immediately when toggled
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTime();
+            setInterval(updateTime, 1000);
+            document.getElementById('toggleFullscreen').addEventListener('click', toggleFullscreen);
+            document.getElementById('toggleMode').addEventListener('click', toggleMode);
+            document.getElementById('toggleMilitary').addEventListener('click', toggleMilitaryTime);
+            document.getElementById('fullscreenClose').addEventListener('click', toggleFullscreen);
+            document.getElementById('toggleDate').addEventListener('click', toggleDate);
+        });
+    </script>
+</body>
+</html>

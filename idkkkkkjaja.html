@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Time Zone</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            transition: background-color 0.5s, color 0.5s;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        input {
+            padding: 10px;
+            font-size: 1.2rem;
+            margin: 5px 0 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 300px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            margin: 5px 0;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            width: 300px;
+        }
+        .small-button {
+            padding: 5px 10px;
+            font-size: 1rem;
+            width: auto; /* Allows button to adjust to content */
+        }
+        .dark-mode {
+            background-color: black;
+            color: white;
+        }
+        .dark-mode button {
+            background-color: #444;
+            color: white;
+        }
+        .dark-mode button:hover {
+            background-color: #555;
+        }
+        .light-mode {
+            background-color: white;
+            color: black;
+        }
+        .light-mode button {
+            background-color: #f0f0f0;
+            color: black;
+        }
+        .light-mode button:hover {
+            background-color: #ddd;
+        }
+        #timezoneButtons {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        #toggleMode {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <h1>Select a Time Zone</h1>
+    <input type="text" id="timezoneSearch" placeholder="Search Time Zone" oninput="filterTimezones()">
+    <div id="timezoneButtons"></div>
+    
+    <button id="toggleMode" class="small-button" onclick="toggleMode()">Light Mode</button> <!-- Toggle Mode button -->
+    
+    <script>
+        const timezones = [
+            { name: 'UTC+14 (Line Islands Time) - LINT', value: 'Pacific/Kiritimati' },
+            { name: 'UTC+13 (Tonga Time) - TOT', value: 'Pacific/Tongatapu' },
+            { name: 'UTC+12:45 (Chatham Standard Time) - CHAST', value: 'Pacific/Chatham' },
+            { name: 'UTC+12 (Anadyr Time) - ANAT', value: 'Asia/Anadyr' },
+            { name: 'UTC+11 (Solomon Islands Time) - SBT', value: 'Pacific/Guadalcanal' },
+            { name: 'UTC+10:30 (Lord Howe Standard Time) - LHST', value: 'Australia/Lord_Howe' },
+            { name: 'UTC+10 (Australian Eastern Standard Time) - AEST', value: 'Australia/Sydney' },
+            { name: 'UTC+9:30 (Australian Central Standard Time) - ACST', value: 'Australia/Adelaide' },
+            { name: 'UTC+9 (Japan Standard Time) - JST', value: 'Asia/Tokyo' },
+            { name: 'UTC+8:45 (Australian Central Western Standard Time) - ACWST', value: 'Australia/Eucla' },
+            { name: 'UTC+8 (China Standard Time) - CST', value: 'Asia/Shanghai' },
+            { name: 'UTC+7 (Western Indonesia Time) - WIB', value: 'Asia/Jakarta' },
+            { name: 'UTC+6:30 (Myanmar Time) - MMT', value: 'Asia/Yangon' },
+            { name: 'UTC+6 (Bangladesh Standard Time) - BST', value: 'Asia/Dhaka' },
+            { name: 'UTC+5:45 (Nepal Time) - NPT', value: 'Asia/Kathmandu' },
+            { name: 'UTC+5:30 (India Standard Time) - IST', value: 'Asia/Kolkata' },
+            { name: 'UTC+5 (Uzbekistan Time) - UZT', value: 'Asia/Tashkent' },
+            { name: 'UTC+4:30 (Afghanistan Time) - AFT', value: 'Asia/Kabul' },
+            { name: 'UTC+4 (Gulf Standard Time) - GST', value: 'Asia/Dubai' },
+            { name: 'UTC+3:30 (Iran Standard Time) - IRST', value: 'Asia/Tehran' },
+            { name: 'UTC+3 (Eastern European Summer Time) - EEST', value: 'Europe/Helsinki' },
+            { name: 'UTC+2 (Central European Summer Time) - CEST', value: 'Europe/Berlin' },
+            { name: 'UTC+1 (British Summer Time) - BST', value: 'Europe/London' },
+            { name: 'UTC+0 (Greenwich Mean Time) - GMT', value: 'GMT' },
+            { name: 'UTC-1 (Cape Verde Time) - CVT', value: 'Atlantic/Cape_Verde' },
+            { name: 'UTC-2 (South Georgia Time) - GST', value: 'Atlantic/South_Georgia' },
+            { name: 'UTC-2:30 (Newfoundland Daylight Time) - NDT', value: 'America/St_Johns' },
+            { name: 'UTC-3 (Argentina Time) - ART', value: 'America/Argentina/Buenos_Aires' },
+            { name: 'UTC-4 (Eastern Daylight Time) - EDT', value: 'America/New_York' },
+            { name: 'UTC-5 (Central Daylight Time) - CDT', value: 'America/Chicago' },
+            { name: 'UTC-6 (Central Standard Time) - CST', value: 'America/Chicago' },
+            { name: 'UTC-7 (Pacific Daylight Time) - PDT', value: 'America/Los_Angeles' },
+            { name: 'UTC-8 (Alaska Daylight Time) - AKDT', value: 'America/Anchorage' },
+            { name: 'UTC-9 (Hawaii-Aleutian Daylight Time) - HDT', value: 'Pacific/Honolulu' },
+            { name: 'UTC-9:30 (Marquesas Time) - MART', value: 'Pacific/Marquesas' },
+            { name: 'UTC-10 (Hawaii-Aleutian Standard Time) - HST', value: 'Pacific/Honolulu' },
+            { name: 'UTC-11 (Niue Time) - NUT', value: 'Pacific/Niue' },
+            { name: 'UTC-12 (Baker Island Time) - AoE', value: 'Pacific/Baker' }
+        ];
+
+        function displayTimezones() {
+            const buttonsDiv = document.getElementById('timezoneButtons');
+            buttonsDiv.innerHTML = '';
+            timezones.forEach(tz => {
+                const button = document.createElement('button');
+                button.textContent = tz.name;
+                button.onclick = () => selectTimezone(tz.value);
+                buttonsDiv.appendChild(button);
+            });
+        }
+
+        function filterTimezones() {
+            const searchTerm = document.getElementById('timezoneSearch').value.toLowerCase();
+            const filteredTimezones = timezones.filter(tz => tz.name.toLowerCase().includes(searchTerm));
+            const buttonsDiv = document.getElementById('timezoneButtons');
+            buttonsDiv.innerHTML = '';
+            filteredTimezones.forEach(tz => {
+                const button = document.createElement('button');
+                button.textContent = tz.name;
+                button.onclick = () => selectTimezone(tz.value);
+                buttonsDiv.appendChild(button);
+            });
+        }
+
+        function selectTimezone(value) {
+            localStorage.setItem('currentTimezone', value);
+            alert(`Selected timezone: ${value}`);
+            window.location.href = 'CurrentTime.html'; // Redirect to Fullscreen Clock
+        }
+
+        function toggleMode() {
+            const body = document.body;
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+                document.getElementById('toggleMode').textContent = 'Dark Mode';
+            } else {
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+                document.getElementById('toggleMode').textContent = 'Light Mode';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', displayTimezones);
+    </script>
+</body>
+</html>
